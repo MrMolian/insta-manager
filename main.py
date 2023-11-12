@@ -177,7 +177,7 @@ class InstaManager():
             return False    
     def see_not_subbed(self):
         try :
-            print("cc les gars ca va")
+            print(STRING_BREAK)
             fllandflwees = {"n" : self.user.followers,"s": self.user.followees}
             abonnés = []
             abonnements = []
