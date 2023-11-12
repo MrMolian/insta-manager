@@ -79,9 +79,9 @@ class InstaManager():
             if longueur :
                 i = 1
                 for post in wall :
-                    with Capturing() as caca :
+                    with Capturing() as text :
                         self.loader.download_post(post,self.user.username+"posts")
-                    print(f"[{i}/{longueur}]     :    ",caca[0])
+                    print(f"[{i}/{longueur}]     :    ",text[0])
                     i += 1
                 #
                 print(STRING_BREAK)
