@@ -2,7 +2,7 @@
 
 Cc ! 
 
-Insta manager est un outil simple pour faire quelques trucs basiques avec Instagram comme :
+Insta manager est un outil simple pour faire quelques trucs basiques avec Instagram comme :  
       - Télécharger les posts d'un compte
       - Télécharger l'id d'un compte
       - Télécharger la photo de profil d'un compte
