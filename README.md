@@ -13,9 +13,9 @@ Insta manager est un outil simple pour faire quelques trucs basiques avec Instag
   Note : Vous devez avoir installé python 3.x sur le site python.org au préalable pour pouvoir utiliser cette commande
 
 # Utilisation
-  ATTENTION : Ca ne marche que sur windows :(      
+  ATTENTION : Ca ne marche que sur windows.             
   vous pouvez exécuter main.py de 2 manières différentes :      
         1. Entrer dans la ligne de terminal la commande "python.exe .../Chemin/vers/main.py      
-        2. Double cliquer main.py si l'appli d'ouverture par défaut est python :)
+        2. Double cliquer main.py si l'appli d'ouverture par défaut est python.
 # Coordonnées 
   Si vous rencontrez un bug, contactez moi sur bit.ly/MrMolian 
