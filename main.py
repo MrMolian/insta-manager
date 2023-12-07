@@ -7,6 +7,7 @@ import os
 from io import StringIO
 import shutil
 import subprocess
+import re
 #CTRL Alt C
 #Shif alt C 
 
@@ -79,9 +80,9 @@ class InstaManager():
             if longueur :
                 i = 1
                 for post in wall :
-                    with Capturing() as text :
+                    with Capturing() as outp :
                         self.loader.download_post(post,self.user.username+"posts")
-                    print(f"[{i}/{longueur}]     :    ",text[0])
+                    print(f"[{i}/{longueur}]     :    ",outp[0])
                     i += 1
                 #
                 print(STRING_BREAK)
@@ -165,8 +166,76 @@ class InstaManager():
                 if not self.all :
                     input(str(e))
                 return False
+    def compare_follow(self):
+        PATH_FILES = PATH + "\\data\\"+self.user.username +"\\logs\\"
         
+        last_abonnements = find_max_increment_file(PATH_FILES,"abonnements")
+        last_follows = find_max_increment_file(PATH_FILES,"abonnés")
+        before_abonnements = "abonnements_{}.txt".format(int(last_abonnements.split(".")[0].split("_")[1])-1)
+        before_follows = "abonnés_{}.txt".format(int(last_follows.split(".")[0].split("_")[1])-1)
+        data = [last_abonnements,
+                last_follows,
+                before_abonnements,
+                before_follows]
+        for file in range(len(data)):
+            with open(PATH_FILES + data[file],"r") as reader :
+                data[file] = reader.readlines()
+        
+        result1 = compare_lists(data[0],data[2]) #1 pas dans 2, 2 pas dans 1
+        result2 = compare_lists(data[1],data[3])
+        print(STRING_BREAK)
+        print("Nouveaux abonnements : " + str(result1[0]))
+        print("Désabonnements : "+ str(result1[1]))
+        print("Nouveaux abonnés : "+ str(result2[0]))
+        print("Abonnés Perdus : " + str(result2[1]))
+        return 
+    def download_follow(self):
+        try :
+            fllandflwees = {"n" : self.user.followers,"s": self.user.followees}
+            abonnés = ""
+            abonnements = ""
+            print(STRING_BREAK)
+            print("En train de compter les Abonnés... \n")
+            print(f"        Abonnés : [0/{fllandflwees['n']}]\r")
+            progress = [0,0]
+            for follower in self.user.get_followers():
+                abonnés += "{}\n".format(f"{follower.username} : {follower.userid}")#abonnés += "{}\n".format(follower.username)
+                #abonnés += "{}\n".format(follower.username)
+                
+                progress[0] = progress[0] + 1
+                clearlastline()
+                print(f"        Abonnés : [{progress[0]}/{fllandflwees['n']}]")
+            clearlastline()
+            print(f"        Abonnés : [{fllandflwees['n']}/{fllandflwees['n']}]")
+
+            print("\n\n")
+
+            print("En train de compter les Abonnements... \n")
+            print(f"        Abonnements : [0/{fllandflwees['s']}]\r")
+
+            for followed in self.user.get_followees():
+                abonnements += "{}\n".format(f"{followed.username} : {followed.userid}")
+                #abonnements += "{}\n".format(followed.username)
+                progress[1] = progress[1] + 1
+                clearlastline()
+                print(f"        Abonnements : [{progress[1]},{fllandflwees['s']}]\r")
+            clearlastline()
+            print(f"        Abonnements : [{fllandflwees['s']}/{fllandflwees['s']}]\r")
+            if abonnements :
+                create_txt_file(folder=PATH+"\\data\\"+self.user.username+"\\logs" ,file_name="abonnements",content=abonnements)
+            if abonnés :
+                create_txt_file(folder=PATH+"\\data\\"+self.user.username+"\\logs" ,file_name="abonnés",content=abonnés)
+            else : 
+                self.download_follow()
+            open_folder(PATH+"\\data\\"+self.user.username+"\\logs")
+            self.compare_follow()
+            input()
+            return True   
+        except Exception as e:
+            input(e)
+            return False
     def download_pdp(self):
+        
         try :
             self.loader.download_profile(self.user.username, profile_pic_only = True)
             download(name="",secondname="Photo de profil")
@@ -177,11 +246,10 @@ class InstaManager():
             return False    
     def see_not_subbed(self):
         try :
-            print(STRING_BREAK)
             fllandflwees = {"n" : self.user.followers,"s": self.user.followees}
             abonnés = []
             abonnements = []
-
+            print(STRING_BREAK)
             print("En train de compter les Abonnés... \n")
             print(f"        Abonnés : [0/{fllandflwees['n']}]\r")
             progress = [0,0]
@@ -241,6 +309,74 @@ def clearlastline(amount=1):
         sys.stdout.write("\033[F") 
         sys.stdout.write("\033[K")
     return 
+def compare_lists(l1, l2):
+    present_in_1_not_in_2 = []
+    present_in_2_not_in_1 = []
+
+    for i in l1:
+        if i not in l2:
+            present_in_1_not_in_2.append(i)
+
+    for i in l2:
+        if i not in l1:
+            present_in_2_not_in_1.append(i)
+
+    return present_in_1_not_in_2, present_in_2_not_in_1
+def create_txt_file(folder, file_name, content):
+    # Initialize file index as 0
+    file_index = 0
+
+    # Loop until a unique file name is found
+    while True:
+        # If the file index is 0, use the original file name
+        if file_index == 0:
+            full_file_name = file_name
+        else:
+            # If the file index is not 0, append it to the file name
+            full_file_name = file_name + "_" + str(file_index)
+
+        # Create the full file path
+        full_file_path = os.path.join(folder, full_file_name + ".txt")
+
+        # If the file does not exist, break the loop
+        if not os.path.exists(full_file_path):
+            break
+
+        # If the file exists, increment the file index and continue the loop
+        file_index += 1
+
+    # Create the folder if it does not exist
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+
+    # Write the content to the file
+    with open(full_file_path, "w") as f:
+        f.write(content)
+
+    return full_file_name
+
+
+def find_max_increment_file(directory,name):
+    max_increment = 0
+    max_increment_file = None
+
+    for file_name in os.listdir(directory):
+        if file_name.endswith('.txt') and file_name.startswith(name):
+            increment = find_max_increment(file_name)
+            if increment > max_increment:
+                max_increment = increment
+                max_increment_file = file_name
+
+    return max_increment_file
+def find_max_increment(file_name):
+    regex = r'(?<=\_)(\d+)(?=\.txt$)'
+    match = re.search(regex, file_name)
+    if match:
+        return int(match.group(1))
+    else:
+        return 0
+
+
 
 def blockPrint():
     sys.stdout = open(os.devnull, 'w')
@@ -577,7 +713,7 @@ def tools_PAGE2():
             error_PAGE(2,HANDLER.is_logged_in(HANDLER.see_not_subbed))
         elif int(choix) == 2:
             #désabonnements abonnements
-            error_PAGE(2,True)
+            error_PAGE(2,HANDLER.is_logged_in(HANDLER.download_follow))
         elif int(choix) == 3:
             tools_PAGE1()
         elif int(choix) == 4:
